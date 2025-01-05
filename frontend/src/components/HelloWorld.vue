@@ -10,9 +10,8 @@ defineProps({
 <template>
   <div class="greetings">
     <h1 class="green">{{ msg }}</h1>
-    <h3>
-      Welcome to Rock + Paper + Scissors Game
-    </h3>
+    <h3>Welcome to Rock + Paper + Scissors Game</h3>
+    <p>Select your move to start.</p>
   </div>
 </template>
 

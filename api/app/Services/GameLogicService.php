@@ -1,7 +1,6 @@
 <?php
 namespace App\Services;
 
-use App\Models\GameConfig;
 use App\Models\Move;
 use App\Models\Rule;
 use App\Http\Resources\MoveResource;
@@ -35,6 +34,8 @@ class GameLogicService
         int $rounds
     ): array {
         return [
+            'player_win_count' => $playerWinCount,
+            'computer_win_count' => $computerWinCount,
             'player_win_percentage' => $this->computeWinningPercentage($playerWinCount, $rounds),
             'computer_win_percentage' => $this->computeWinningPercentage($computerWinCount, $rounds),
             'draw_count' => $drawCount,

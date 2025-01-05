@@ -1,23 +1,23 @@
+
 <template>
   <div class="about">
     <div class="inner">
-      <h1>Select your move</h1>
-      <div class="choices">
-        <button @click="executeMove('rock')" :disabled="loading">Rock</button>
-        <button @click="executeMove('paper')" :disabled="loading">Paper</button>
-        <button @click="executeMove('scissors')" :disabled="loading">Scissors</button>
-        <div v-show="loading" class="loader spinner-border text-secondary" role="status"></div>
+      <div
+        v-if="gameState === 'initial'"
+        class="d-flex"
+      >
+        <div class="loader spinner-border text-secondary" role="status"></div>
+        <div class="mx-3">Preparing...</div>
       </div>
-
-
-      <div v-if="playerMove && !loading" class="results">
-        <h3 v-show="result === 'win'" class="text-success">You Won</h3>
-        <h3 v-show="result === 'lose'" class="text-danger">You Lose</h3>
-        <h3 v-show="result === 'draw'" class="text-warning">Draw</h3>
-
-        <p>Your Move: <strong>{{ playerMove }}</strong></p>
-        <p>Computer Move: <strong>{{ computerMove }}</strong></p>
-      </div>
+      <section v-else>
+        <div v-for="player in players" class="mb-4">
+          <PlayerMove
+            :player="player"
+            :gameConfig="gameConfig"
+            :moveOptions="moveOptions"
+          />
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -51,48 +51,105 @@ button:hover {
 </style>
 
 <script>
-import axios from 'axios';
+import axios from 'axios'
+import PlayerMove from '@/components/PlayerMove.vue'
+
+// can be done on ENV var
+const API_URL = 'http://localhost:8000/api';
 
 export default {
+  components: {
+    PlayerMove
+  },
   data() {
     return {
       data: null,
-      error: null,
       loading: false,
       playerMove: null,
       computerMove: null,
       result: null,
-    };
+      gameState: 'initial',
+      gameConfig: {},
+      moveOptions: [],
+      currentRound: 1,
+      playerWinCount: 0,
+      computerWinCount: 0,
+      drawCount: 0,
+      analysing: false,
+      players: [],
+    }
   },
   methods: {
     async fetchConfig() {
-      await axios.get('http://localhost:8000/api/config')
-        .then(response => {
-          console.log('RESPONSE', response)
-        })
-        .catch(error => {
+      await axios
+        .get(API_URL + '/config')
+        .then((response) => {
+          const { data } = response
+          this.gameConfig = data?.config;
+          const playerCount = parseInt(this.gameConfig?.players_count) - 1;
+          for (let i = 1; i <= playerCount; i++) {
+            this.players.push(i);
+          }
+        });
+    },
+    setPlayers() {
+
+    },
+    async fetchMoves() {
+      await axios
+        .get(API_URL + '/moves')
+        .then((response) => {
+          this.moveOptions = response?.data;
         });
     },
     async executeMove(move) {
-      this.loading = true;
-      this.playerMove = move;
-      await axios.post('http://localhost:8000/api/execute', {move: this.playerMove})
-        .then(response => {
-          const { data } = response;
-          console.log('data', data)
+      this.loading = true
+      this.playerMove = this.moveOptions.find(moveOption => moveOption.slug === move)?.name
+      await axios
+        .post(API_URL + '/execute', { move })
+        .then((response) => {
+          const { data } = response
           this.data = data
-          this.computerMove = data?.result.computer_move.name;
-          this.result = data?.result.outcome;
-          this.loading = false;
+          this.computerMove = data?.result.computer_move.name
+          this.result = data?.result.outcome
+          this.loading = false
+          if (this.currentRound === parseInt(this.gameConfig?.rounds)) {
+            this.analyse();
+          } else {
+            this.currentRound = this.currentRound + 1;
+          }
+
+          if (this.result === 'win') {
+              this.playerWinCount = this.playerWinCount + 1;
+            } else if (this.result === 'lose') {
+              this.computerWinCount = this.computerWinCount + 1;
+            } else if (this.result === 'draw') {
+              this.drawCount = this.drawCount + 1;
+            }
         })
-        .catch(error => {
-          this.error = error.message;
-          this.loading = false;
-        });
+        .catch((error) => {
+          this.error = error.message
+          this.loading = false
+        })
     },
+    async analyse() {
+      this.analysing = true;
+      await axios
+        .post(API_URL + '/analyse', {
+          'player_win_count': this.playerWinCount,
+          'computer_win_count': this.computerWinCount,
+          'draw_count': this.drawCount,
+          'rounds': this.gameConfig.rounds
+        })
+        .then((response) => {
+          console.log('ANALYSE', response)
+        });
+    }
   },
-  mounted() {
-    this.fetchConfig();
+  async mounted() {
+    await this.fetchConfig();
+    await this.fetchMoves();
+    this.gameState = 'started';
   }
-};
+}
 </script>
