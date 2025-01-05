@@ -132,19 +132,6 @@ export default {
           this.loading = false
         })
     },
-    async analyse() {
-      this.analysing = true;
-      await axios
-        .post(API_URL + '/analyse', {
-          'player_win_count': this.playerWinCount,
-          'computer_win_count': this.computerWinCount,
-          'draw_count': this.drawCount,
-          'rounds': this.gameConfig.rounds
-        })
-        .then((response) => {
-          console.log('ANALYSE', response)
-        });
-    }
   },
   async mounted() {
     await this.fetchConfig();
