@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\MoveController;
+use App\Http\Controllers\RuleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,14 +18,16 @@ use App\Http\Controllers\MoveController;
 |
 */
 
+Route::get('/moves', [MoveController::class, 'all']);
+Route::post('/moves', [MoveController::class, 'create']);
+
+Route::post('/rules', [RuleController::class, 'create']);
 
 Route::post('/execute', [GameController::class, 'executeRound']);
 Route::post('/analyse', [GameController::class, 'analyse']);
 
 Route::get('/config', [ConfigController::class, 'getConfig']);
 Route::post('/config/update', [ConfigController::class, 'updateConfig']);
-
-Route::get('/moves', [MoveController::class, 'all']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

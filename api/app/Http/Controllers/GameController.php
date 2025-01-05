@@ -16,7 +16,7 @@ class GameController extends Controller
     public function executeRound(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'move' => ['required', 'in:rock,paper,scissors'],
+            'move' => ['required'],
         ]);
 
         if ($validator->fails()) {
@@ -27,9 +27,17 @@ class GameController extends Controller
         }
 
         $move = $request->get('move');
-        return response()->json([
-            'result' => $this->gameService->executeRound($move)
-        ]);
+        try {
+            return response()->json([
+                'result' => $this->gameService->executeRound($move)
+            ]);
+        } catch (\App\Exceptions\RuleNotSupportedException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->getMessage(),
+                'missing_rules' => $this->gameService->getMissingMoveRules($move)
+            ], 400);
+        }
     }
 
     public function analyse(Request $request)

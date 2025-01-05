@@ -17,4 +17,25 @@ class MoveController extends Controller
     {
         return $this->moveService->all();
     }
+
+    public function create(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'slug' => ['required', 'unique:move,slug'],
+            'name' => ['required', 'string']
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+        $slug = $request->get('slug');
+        $name = $request->get('name');
+        return $this->moveService->create([
+            'slug' => $slug,
+            'name' => $name
+        ]);
+    }
 }
