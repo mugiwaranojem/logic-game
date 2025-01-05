@@ -34,7 +34,7 @@ class GameController extends Controller
         } catch (\App\Exceptions\RuleNotSupportedException $e) {
             return response()->json([
                 'success' => false,
-                'errors' => $e->getMessage(),
+                'message' => $e->getMessage(),
                 'missing_rules' => $this->gameService->getMissingMoveRules($move)
             ], 400);
         }

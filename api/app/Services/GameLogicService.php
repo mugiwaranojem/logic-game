@@ -65,6 +65,14 @@ class GameLogicService
             if (!$rule) {
                 $missingRules[] = sprintf('%s vs %s', $selectedMove, $move->slug);
             }
+
+            // Vice versa
+            $rule = Rule::where('move', $move->slug)
+                ->where('vs_move', $selectedMove)
+                ->first();
+            if (!$rule) {
+                $missingRules[] = sprintf('%s vs %s', $move->slug, $selectedMove);
+            }
         }
 
         return $missingRules;

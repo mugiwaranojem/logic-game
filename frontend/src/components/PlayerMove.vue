@@ -31,6 +31,10 @@
             Opponent Move: <strong>{{ computerMove }}</strong>
           </p>
         </div>
+
+        <div v-show="this.error" class="alert alert-danger" role="alert">
+          {{ this.error }}
+        </div>
       </section>
     </div>
   </div>
@@ -106,11 +110,13 @@ export default {
       computerWinCount: 0,
       drawCount: 0,
       analysing: false,
-      moveHistory: []
+      moveHistory: [],
+      error: null
     }
   },
   methods: {
     async executeMove(move) {
+      this.error = null;
       this.loading = true
       this.playerMove = this.moveOptions.find(moveOption => moveOption.slug === move)?.name
       await axios
@@ -143,8 +149,25 @@ export default {
           }
         })
         .catch((error) => {
-          this.error = error.message
+          this.error = error.response.data.message;
+          if (error?.response?.data?.missing_rules) {
+            this.error = this.error + ' Missing rules: ' 
+              + error?.response?.data?.missing_rules.join(', ')
+          }
+          console.log('error.response.data',)
           this.loading = false
+          this.drawCount = this.drawCount + 1;
+          this.moveHistory.push({
+            player_move: '--',
+            computer_move: '--',
+            outcome: 'draw'
+          });
+
+          if (this.currentRound === parseInt(this.gameConfig?.rounds)) {
+            this.gameState = 'analyse';
+          } else {
+            this.currentRound = this.currentRound + 1;
+          }
         })
     }
   }
