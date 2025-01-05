@@ -2,7 +2,11 @@
   <div class="player-move">
     <div class="inner-player-move">
       <h2>Player {{ player }}</h2>
-      <Analyse v-if="gameState === 'analyse'" :history="moveHistory" :rounds="parseInt(gameConfig?.rounds)"/>
+      <Analyse
+        v-if="gameState === 'analyse'"
+        :history="moveHistory"
+        :rounds="parseInt(gameConfig?.rounds)"
+      />
       <section v-else>
         <div class="choices">
           <button
@@ -78,7 +82,7 @@ import axios from 'axios'
 import Analyse from '@/components/Analyse.vue'
 
 // can be done on ENV var
-const API_URL = 'http://localhost:8000/api';
+const API_URL = 'http://localhost:8000/api'
 
 export default {
   props: {
@@ -87,16 +91,16 @@ export default {
       required: true,
     },
     gameConfig: {
-      type: Object
+      type: Object,
     },
     moveOptions: {
-      type: Array
-    }
+      type: Array,
+    },
   },
   components: {
     Analyse,
-    Analyse
-},
+    Analyse,
+  },
   data() {
     return {
       data: null,
@@ -111,14 +115,14 @@ export default {
       drawCount: 0,
       analysing: false,
       moveHistory: [],
-      error: null
+      error: null,
     }
   },
   methods: {
     async executeMove(move) {
-      this.error = null;
+      this.error = null
       this.loading = true
-      this.playerMove = this.moveOptions.find(moveOption => moveOption.slug === move)?.name
+      this.playerMove = this.moveOptions.find((moveOption) => moveOption.slug === move)?.name
       await axios
         .post(API_URL + '/execute', { move })
         .then((response) => {
@@ -131,45 +135,45 @@ export default {
           this.moveHistory.push({
             player_move: move,
             computer_move: data?.result.computer_move.slug,
-            outcome: data?.result.outcome
-          });
+            outcome: data?.result.outcome,
+          })
 
           if (this.result === 'win') {
-            this.playerWinCount = this.playerWinCount + 1;
+            this.playerWinCount = this.playerWinCount + 1
           } else if (this.result === 'lose') {
-            this.computerWinCount = this.computerWinCount + 1;
+            this.computerWinCount = this.computerWinCount + 1
           } else if (this.result === 'draw') {
-            this.drawCount = this.drawCount + 1;
+            this.drawCount = this.drawCount + 1
           }
 
           if (this.currentRound === parseInt(this.gameConfig?.rounds)) {
-            this.gameState = 'analyse';
+            this.gameState = 'analyse'
           } else {
-            this.currentRound = this.currentRound + 1;
+            this.currentRound = this.currentRound + 1
           }
         })
         .catch((error) => {
-          this.error = error.response.data.message;
+          this.error = error.response.data.message
           if (error?.response?.data?.missing_rules) {
-            this.error = this.error + ' Missing rules: ' 
-              + error?.response?.data?.missing_rules.join(', ')
+            this.error =
+              this.error + ' Missing rules: ' + error?.response?.data?.missing_rules.join(', ')
           }
-          console.log('error.response.data',)
+          console.log('error.response.data')
           this.loading = false
-          this.drawCount = this.drawCount + 1;
+          this.drawCount = this.drawCount + 1
           this.moveHistory.push({
             player_move: '--',
             computer_move: '--',
-            outcome: 'draw'
-          });
+            outcome: 'draw',
+          })
 
           if (this.currentRound === parseInt(this.gameConfig?.rounds)) {
-            this.gameState = 'analyse';
+            this.gameState = 'analyse'
           } else {
-            this.currentRound = this.currentRound + 1;
+            this.currentRound = this.currentRound + 1
           }
         })
-    }
-  }
+    },
+  },
 }
 </script>

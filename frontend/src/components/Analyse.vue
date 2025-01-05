@@ -65,7 +65,7 @@
 </style>
 <script>
 import axios from 'axios'
-const API_URL = 'http://localhost:8000/api';
+const API_URL = 'http://localhost:8000/api'
 
 export default {
   props: {
@@ -77,7 +77,7 @@ export default {
     rounds: {
       type: Number,
       required: true,
-    }
+    },
   },
   data() {
     return {
@@ -87,46 +87,46 @@ export default {
         computer_win_count: 0,
         player_win_percentage: 0,
         computer_win_percentage: 0,
-        draw_count: 0
-      }
+        draw_count: 0,
+      },
     }
   },
   methods: {
     async analyse() {
-      this.analysing = true;
-      let playerWinCount = 0;
-      let computerWinCount = 0;
-      let drawCount = 0;
-      this.history.forEach(moveItem => {
+      this.analysing = true
+      let playerWinCount = 0
+      let computerWinCount = 0
+      let drawCount = 0
+      this.history.forEach((moveItem) => {
         if (moveItem.outcome === 'win') {
-          playerWinCount++;
+          playerWinCount++
         } else if (moveItem.outcome === 'lose') {
-          computerWinCount++;
+          computerWinCount++
         } else if (moveItem.outcome === 'draw') {
-          drawCount++;
+          drawCount++
         }
-      });
+      })
 
       await axios
         .post(API_URL + '/analyse', {
-          'player_win_count': playerWinCount,
-          'computer_win_count': computerWinCount,
-          'draw_count': drawCount,
-          'rounds': this.rounds
+          player_win_count: playerWinCount,
+          computer_win_count: computerWinCount,
+          draw_count: drawCount,
+          rounds: this.rounds,
         })
         .then((response) => {
-          const { data } = response;
-          this.result.player_win_count = data?.result?.player_win_count;
-          this.result.computer_win_count = data?.result?.computer_win_count;
-          this.result.player_win_percentage = data?.result?.player_win_percentage;
-          this.result.computer_win_percentage = data?.result?.computer_win_percentage;
-          this.result.draw_count = data?.result?.draw_count;
-          this.analysing = false;
-        });
-    }
+          const { data } = response
+          this.result.player_win_count = data?.result?.player_win_count
+          this.result.computer_win_count = data?.result?.computer_win_count
+          this.result.player_win_percentage = data?.result?.player_win_percentage
+          this.result.computer_win_percentage = data?.result?.computer_win_percentage
+          this.result.draw_count = data?.result?.draw_count
+          this.analysing = false
+        })
+    },
   },
   async mounted() {
-    await this.analyse();
-  }
-};
+    await this.analyse()
+  },
+}
 </script>
