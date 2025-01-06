@@ -17,6 +17,9 @@ use App\Http\Controllers\RuleController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::get('/version', function () {
+    return app()->version();
+});
 
 Route::get('/moves', [MoveController::class, 'all']);
 Route::post('/moves', [MoveController::class, 'create']);
